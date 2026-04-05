@@ -15,12 +15,7 @@ x64/
 x86/
 build/
 out/
-
-# =========================
-# CMake (se usar no futuro)
-# =========================
-CMakeFiles/
-CMakeCache.txt
+CopilotIndices/
 
 # =========================
 # IntelliSense / cache

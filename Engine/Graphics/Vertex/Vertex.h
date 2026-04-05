@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Math/Color/Color.h"
-#include "Math/Vectors/Vector.h"
+#include "Math/Vectors/Vector2D.h"
 
 struct Vertex
 {
