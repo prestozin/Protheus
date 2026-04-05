@@ -1,4 +1,5 @@
-#include "renderer.hpp"
+#include "renderer.h"
+
 #include <algorithm>
 
 static RendererInfo info;
@@ -301,13 +302,13 @@ void DrawFilledTriangle(Vertex v1, Vertex v2, Vertex v3)
 #pragma endregion
 
 	//bounding box
-	int minX = std::min(v1.position.x, std::min(v2.position.x, v3.position.x));
-	int maxX = std::max(v1.position.x, std::max(v2.position.x, v3.position.x));
+	int minX = std::min(v1.Position.x, std::min(v2.Position.x, v3.Position.x));
+	int maxX = std::max(v1.Position.x, std::max(v2.Position.x, v3.Position.x));
 
-	int minY = std::min(v1.position.y, std::min(v2.position.y, v3.position.y));
-	int maxY = std::max(v1.position.y, std::max(v2.position.y, v3.position.y));
+	int minY = std::min(v1.Position.y, std::min(v2.Position.y, v3.Position.y));
+	int maxY = std::max(v1.Position.y, std::max(v2.Position.y, v3.Position.y));
 
-	float area = EdgeFunction(v1.position.x, v1.position.y, v2.position.x, v2.position.y, v3.position.x, v3.position.y);
+	float area = EdgeFunction(v1.Position.x, v1.Position.y, v2.Position.x, v2.Position.y, v3.Position.x, v3.Position.y);
 
 	if (area == 0.0f) return;
 
@@ -317,9 +318,9 @@ void DrawFilledTriangle(Vertex v1, Vertex v2, Vertex v3)
 	{
 		for (int x = minX; x <= maxX; x++)
 		{
-			float baryWeight0 = EdgeFunction(v2.position.x, v2.position.y, v3.position.x, v3.position.y, x, y);
-			float baryWeight1 = EdgeFunction(v3.position.x, v3.position.y, v1.position.x, v1.position.y, x, y);
-			float baryWeight2 = EdgeFunction(v1.position.x, v1.position.y, v2.position.x, v2.position.y, x, y);
+			float baryWeight0 = EdgeFunction(v2.Position.x, v2.Position.y, v3.Position.x, v3.Position.y, x, y);
+			float baryWeight1 = EdgeFunction(v3.Position.x, v3.Position.y, v1.Position.x, v1.Position.y, x, y);
+			float baryWeight2 = EdgeFunction(v1.Position.x, v1.Position.y, v2.Position.x, v2.Position.y, x, y);
 
 			float weight0 = baryWeight0 * invArea;
 			float weight1 = baryWeight1 * invArea;
@@ -330,9 +331,9 @@ void DrawFilledTriangle(Vertex v1, Vertex v2, Vertex v3)
 			{
 
 				Color finalColor =
-					v1.color * weight0 +
-					v2.color * weight1 +
-					v3.color * weight2;
+					v1.Color * weight0 +
+					v2.Color * weight1 +
+					v3.Color * weight2;
 
 				SetPixel(x, y, ToUint32(finalColor));
 			}

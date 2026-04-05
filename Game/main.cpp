@@ -1,4 +1,4 @@
-#include "renderer.hpp"
+#include "Graphics/Renderer/Renderer.h"
 #include "SDL3/SDL.h"
 
 int main()
