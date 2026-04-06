@@ -42,3 +42,5 @@ CopilotIndices/
 # =========================
 Thumbs.db
 /.vs/Protheus/CopilotIndices
+/x64
+/.vs

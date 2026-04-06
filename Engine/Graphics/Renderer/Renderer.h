@@ -9,9 +9,6 @@ struct RendererInfo
 };
 
 
-
-
-
 void InitRenderer(int width, int height);
 void ShutdownRenderer();
 

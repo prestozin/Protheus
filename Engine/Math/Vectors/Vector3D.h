@@ -1,4 +1,6 @@
+#pragma once
+
 struct Vector3D
 {
-	int x, y, z;
+	float x, y, z;
 };
