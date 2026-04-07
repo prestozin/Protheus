@@ -24,12 +24,14 @@
     <ClInclude Include="Engine\Math\Color\Color.h" />
     <ClInclude Include="Engine\Math\Matrix\Matrix.h" />
     <ClInclude Include="Engine\Math\Projection\Projection.h" />
+    <ClInclude Include="Engine\Math\Transform\Transform.h" />
     <ClInclude Include="Engine\Math\Vectors\Vector2D.h" />
     <ClInclude Include="Engine\Math\Vectors\Vector3D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Graphics\Renderer\Renderer.cpp" />
     <ClCompile Include="Engine\Math\Projection\Projection.cpp" />
+    <ClCompile Include="Engine\Math\Transform\Transform.cpp" />
     <ClCompile Include="Game\main.cpp" />
   </ItemGroup>
   <ItemGroup>

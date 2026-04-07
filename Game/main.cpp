@@ -1,7 +1,7 @@
 #include "Graphics/Renderer/Renderer.h"
 #include "Math/Projection/Projection.h"
+#include <Math/Transform/Transform.h>
 #include "SDL3/SDL.h"
-
 
 int main()
 {
@@ -14,8 +14,8 @@ int main()
 
     SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 800,600);
 
-
-
+    float deltaTime = 0.016f;
+    float angle = 0.0f;
     bool running = true;
 
     while (running)
@@ -54,11 +54,30 @@ int main()
             {0,4}, {1,5}, {2,6}, {3,7}  // liga frente ↔ trás
         };
 
+      
+
+        angle += 0.1f * deltaTime;
+
         Vector2D projected[8];
+        Vector3D rotated[8];
+
+        Vector3D center = { 0, 0, 4 };
 
         for (int i = 0; i < 8; i++)
         {
-            projected[i] = Project(cube[i], info.width, info.height);
+            Vector3D p = cube[i];
+
+            // 1. mover para origem
+            p = Translate(p, { -center.x, -center.y, -center.z });
+
+            // 2. rotacionar
+            p = RotateX(p, angle);
+
+            // 3. voltar
+            p = Translate(p, center);
+
+            // 4. projetar
+            projected[i] = Project(p, info.width, info.height);
         }
 
         for (int i = 0; i < 12; i++)
