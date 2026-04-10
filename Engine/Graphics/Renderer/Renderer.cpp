@@ -36,14 +36,14 @@ void Clear(uint32_t color)
 }
 
 //sets the pixel at (x, y) to the specified color
-void SetPixel(int x, int y, uint32_t color)
+void SetPixel(Vector2D position, uint32_t color)
 {
-	if (x < 0 || x >= info.width || y < 0 || y >= info.height)
+	if (position.x < 0 || position.x >= info.width || position.y < 0 || position.y >= info.height)
 		return;
 
 	//convert the 2D coordinates (x, y) to a 1D index in the framebuffer array and set that pixel to the specified color
 	//line(x) * width + column(y) = index in the 1D array
-	framebuffer[y * info.width + x] = color;
+	framebuffer[static_cast<int>(position.y) * info.width + static_cast<int>(position.x)] = color;
 }
 
 //returns a pointer to the framebuffer, wich is an array of uint32_t representing each pixel on the screen
@@ -52,7 +52,7 @@ uint32_t* GetFramebuffer()
 	return framebuffer;
 }
 
-float EdgeFunction(int Vec1X, int Vec1Y, int Vec2X, int Vec2Y, int Px, int Py)
+float EdgeFunction(Vector2D Vertice1, Vector2D Vertice2, Vector2D Point)
 {
 #pragma region EdgeFunctionExplained
 
@@ -75,14 +75,13 @@ float EdgeFunction(int Vec1X, int Vec1Y, int Vec2X, int Vec2Y, int Px, int Py)
 
 
 	// vector AB:
-	// (Vec2X - Vec1X, Vec2Y - Vec1Y) = 6 - 2, 2 - 2 = (4, 0)
+	// (Vertice2.x - Vertice1.x, Vertice2.y - Vertice1.y) = 6 - 2, 2 - 2 = (4, 0)
 
 	//// vector AP:
-	// (Px - Vec1X, Py - Vec1Y) = 4 - 2, 5 - 2 = (2, 3)
-
+	// (Point.x - Vertice1.x, Point.y - Vertice1.y) = 4 - 2, 5 - 2 = (2, 3)
 
 	//// edge function:
-	// (Px - Vec1X)*(Vec2Y - Vec1Y) - (Py - Vec1Y)*(Vec2X - Vec1X)
+	// (Point.x - Vertice1.x)*(Vertice2.y - Vertice1.y) - (Point.y - Vertice1.y)*(Vertice2.x - Vertice1.x)
 
 	//// calculation:
 
@@ -118,23 +117,22 @@ float EdgeFunction(int Vec1X, int Vec1Y, int Vec2X, int Vec2Y, int Px, int Py)
 
 
 #pragma endregion
-	return (Px - Vec1X) * (Vec2Y - Vec1Y) - (Py - Vec1Y) * (Vec2X - Vec1X);
+	return (Point.x - Vertice1.x) * (Vertice2.y - Vertice1.y) - (Point.y - Vertice1.y) * (Vertice2.x - Vertice1.x);
 }
 
-void DrawLine(int x1, int y1, int x2, int y2, uint32_t color)
+void DrawLine(Vector2D Vertice1, Vector2D Vertice2, uint32_t color)
 {
-	int dx = x2 - x1;
-	int dy = y2 - y1;
+	int differenceX = Vertice2.x - Vertice1.x;
+	int differenceY = Vertice2.y - Vertice1.y;
 
-	// dx and dy (difference between points)
 
-	// dx = movement in X
-	// dy = movement in Y
+	// differenceX = movement in X
+	// differenceY = movement in Y
 
 	// ex: A(2,1) → B(6,4)
 
-	// dx = 6 - 2 = 4
-	// dy = 4 - 1 = 3
+	// differenceX = 6 - 2 = 4
+	// differenceY = 4 - 1 = 3
 
 	//visual:
 
@@ -147,13 +145,13 @@ void DrawLine(int x1, int y1, int x2, int y2, uint32_t color)
 
 
 
-	int steps = std::max(std::abs(dx), std::abs(dy));
+	int steps = std::max(std::abs(differenceX), std::abs(differenceY));
 
-	//get the bigger of the two differences (dx and dy) to determine how many steps we need to take to draw the line.
+	//get the bigger of the two differences (differenceX and differenceY) to determine how many steps we need to take to draw the line.
 	// dx = 4, dy = 3 → steps = 4(the bigger one)
 
-	float xIncrement = dx / static_cast<float>(steps);
-	float yIncrement = dy / static_cast<float>(steps);
+	float xIncrement = differenceX / static_cast<float>(steps);
+	float yIncrement = differenceY / static_cast<float>(steps);
 
 	//calculate how much we need to increment x and y for each step to move from the starting point to the ending point in equal increments.
 
@@ -171,8 +169,8 @@ void DrawLine(int x1, int y1, int x2, int y2, uint32_t color)
 	//// X: 2 → 3 → 4 → 5 → 6
 	//// Y: 1 → 1.75 → 2.5 → 3.25 → 4
 
-	float x = x1;
-	float y = y1;
+	float x = Vertice1.x;
+	float y = Vertice1.y;
 
 	//convert the starting point (x1, y1) to float to allow for fractional increments when drawing the line.
 	//only integer values can be used, the float values will be stored and will be used when they become a integer after the increments.
@@ -180,7 +178,7 @@ void DrawLine(int x1, int y1, int x2, int y2, uint32_t color)
 
 	for (int i = 0; i <= steps; i++)
 	{
-		SetPixel((int)x, (int)y, color);
+		SetPixel({x, y}, color);
 		x += xIncrement;
 		y += yIncrement;
 
@@ -225,22 +223,22 @@ void DrawLine(int x1, int y1, int x2, int y2, uint32_t color)
 	}
 }
 
-void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color)
+void DrawTriangle(Vector2D Vertice1, Vector2D Vertice2, Vector2D Vertice3, uint32_t color)
 {
-	DrawLine(x1, y1, x2, y2, color);
-	DrawLine(x2, y2, x3, y3, color);
-	DrawLine(x3, y3, x1, y1, color);
+	DrawLine(Vertice1, Vertice2, color);
+	DrawLine(Vertice2, Vertice3, color);
+	DrawLine(Vertice3, Vertice1, color);
 }
 
-void DrawSquare(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, uint32_t color)
+void DrawSquare(Vector2D Vertice1, Vector2D Vertice2, Vector2D Vertice3, Vector2D Vertice4, uint32_t color)
 {
-	DrawLine(x1, y1, x2, y2, color);
-	DrawLine(x2, y2, x3, y3, color);
-	DrawLine(x3, y3, x1, y1, color);
-	DrawLine(x4, y4, x1, y1, color);
+	DrawLine(Vertice1, Vertice2, color);
+	DrawLine(Vertice2, Vertice3, color);
+	DrawLine(Vertice3, Vertice4, color);
+	DrawLine(Vertice4, Vertice1, color);
 }
 
-void DrawFilledTriangle(Vertex v1, Vertex v2, Vertex v3)
+void DrawFilledTriangle(Vertex Vertice1, Vertex Vertice2, Vertex Vertice3)
 {
 
 #pragma region BoudingBoxExplained
@@ -302,13 +300,13 @@ void DrawFilledTriangle(Vertex v1, Vertex v2, Vertex v3)
 #pragma endregion
 
 	//bounding box
-	int minX = std::min(v1.Position.x, std::min(v2.Position.x, v3.Position.x));
-	int maxX = std::max(v1.Position.x, std::max(v2.Position.x, v3.Position.x));
+	int minX = std::min(Vertice1.Position.x, std::min(Vertice2.Position.x, Vertice3.Position.x));
+	int maxX = std::max(Vertice1.Position.x, std::max(Vertice2.Position.x, Vertice3.Position.x));
 
-	int minY = std::min(v1.Position.y, std::min(v2.Position.y, v3.Position.y));
-	int maxY = std::max(v1.Position.y, std::max(v2.Position.y, v3.Position.y));
+	int minY = std::min(Vertice1.Position.y, std::min(Vertice2.Position.y, Vertice3.Position.y));
+	int maxY = std::max(Vertice1.Position.y, std::max(Vertice2.Position.y, Vertice3.Position.y));
 
-	float area = EdgeFunction(v1.Position.x, v1.Position.y, v2.Position.x, v2.Position.y, v3.Position.x, v3.Position.y);
+	float area = EdgeFunction(Vertice1.Position, Vertice2.Position, Vertice3.Position);
 
 	if (area == 0.0f) return;
 
@@ -318,9 +316,9 @@ void DrawFilledTriangle(Vertex v1, Vertex v2, Vertex v3)
 	{
 		for (int x = minX; x <= maxX; x++)
 		{
-			float baryWeight0 = EdgeFunction(v2.Position.x, v2.Position.y, v3.Position.x, v3.Position.y, x, y);
-			float baryWeight1 = EdgeFunction(v3.Position.x, v3.Position.y, v1.Position.x, v1.Position.y, x, y);
-			float baryWeight2 = EdgeFunction(v1.Position.x, v1.Position.y, v2.Position.x, v2.Position.y, x, y);
+			float baryWeight0 = EdgeFunction(Vertice2.Position,Vertice3.Position,{ (float)x, (float)y });
+			float baryWeight1 = EdgeFunction(Vertice3.Position,Vertice1.Position,{ (float)x, (float)y });
+			float baryWeight2 = EdgeFunction(Vertice1.Position,Vertice2.Position,{ (float)x, (float)y });
 
 			float weight0 = baryWeight0 * invArea;
 			float weight1 = baryWeight1 * invArea;
@@ -331,11 +329,11 @@ void DrawFilledTriangle(Vertex v1, Vertex v2, Vertex v3)
 			{
 
 				Color finalColor =
-					v1.Color * weight0 +
-					v2.Color * weight1 +
-					v3.Color * weight2;
+					Vertice1.Color * weight0 +
+					Vertice2.Color * weight1 +
+					Vertice3.Color * weight2;
 
-				SetPixel(x, y, ToUint32(finalColor));
+				SetPixel({static_cast<float>(x), static_cast<float>(y)}, ToUint32(finalColor));
 			}
 		}
 	}

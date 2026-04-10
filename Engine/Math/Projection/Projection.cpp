@@ -2,8 +2,8 @@
 
 Vector2D Project(const Vector3D& point, int screenWidth, int screenHeight)
 {
-	float focalLenght = 200.0f; // focal length (distance from the camera to the projection plane)
-	float z = point.z; // depth of the point relative to the camera (distance from the camera to the point)
+	float focalLenght = 200.0f; 
+	float z = point.z; // depth of the point 
 
 	if (z <= 0.1f)
 	{
@@ -14,8 +14,8 @@ Vector2D Project(const Vector3D& point, int screenWidth, int screenHeight)
 	
 	Vector2D projectedPoint;
 
-	projectedPoint.x = (point.x / z) * focalLenght; // project x and center on the screen
-	projectedPoint.y = (point.y / z) * focalLenght; // project y and center on the screen
+	projectedPoint.x = (point.x / z) * focalLenght; 
+	projectedPoint.y = (point.y / z) * focalLenght; 
 
 	projectedPoint.x += screenWidth / 2.0f;
 	projectedPoint.y += screenHeight / 2.0f;

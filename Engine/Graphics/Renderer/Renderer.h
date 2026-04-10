@@ -16,11 +16,11 @@ RendererInfo GetRendererInfo();
 
 void Clear(uint32_t color);
 
-void SetPixel(int x, int y, uint32_t color);
+void SetPixel(Vector2D position, uint32_t color);
 
 uint32_t* GetFramebuffer();
 
-void DrawLine(int x1, int y1, int x2, int y2, uint32_t color);
+void DrawLine(Vector2D Vertice1, Vector2D Vertice2, uint32_t color);
 
 void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
 

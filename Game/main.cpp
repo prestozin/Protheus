@@ -51,7 +51,7 @@ int main()
         {
             {0,1}, {1,2}, {2,3}, {3,0}, // frente
             {4,5}, {5,6}, {6,7}, {7,4}, // trás
-            {0,4}, {1,5}, {2,6}, {3,7}  // liga frente ↔ trás
+            {0,4}, {1,5}, {2,6}, {3,7}  // liga fren trás
         };
 
       
@@ -67,16 +67,13 @@ int main()
         {
             Vector3D p = cube[i];
 
-            // 1. mover para origem
             p = Translate(p, { -center.x, -center.y, -center.z });
 
-            // 2. rotacionar
             p = RotateX(p, angle);
+            p = RotateZ(p, angle);
 
-            // 3. voltar
             p = Translate(p, center);
 
-            // 4. projetar
             projected[i] = Project(p, info.width, info.height);
         }
 
@@ -85,11 +82,7 @@ int main()
             int a = edges[i][0];
             int b = edges[i][1];
 
-            DrawLine(
-                (int)projected[a].x, (int)projected[a].y,
-                (int)projected[b].x, (int)projected[b].y,
-                0xFFFFFFFF
-            );
+            DrawLine(projected[a], projected[b], 0xFFFFFFFF);
         }
 
         SDL_UpdateTexture(texture, NULL, GetFramebuffer(), 800 * sizeof(uint32_t));
