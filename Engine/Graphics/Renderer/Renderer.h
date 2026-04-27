@@ -1,5 +1,6 @@
 #pragma once
 #include "Graphics/Vertex/Vertex.h"
+#include "Math/Vectors/Vector2D.h"
 #include <cstdint>
 
 
@@ -22,13 +23,9 @@ uint32_t* GetFramebuffer();
 
 void DrawLine(Vector2D Vertice1, Vector2D Vertice2, uint32_t color);
 
-void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
-
-void DrawSquare(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, uint32_t color);
-
-float EdgeFunction(int Vec1X, int Vec1Y, int Vec2X, int Vec2Y, int Px, int Py);
-
 void DrawFilledTriangle(Vertex v1, Vertex v2, Vertex v3);
+
+void DrawCircle(uint32_t vertices, float radius, Vector2D center);
 
 inline float Clamp(float value)
 {

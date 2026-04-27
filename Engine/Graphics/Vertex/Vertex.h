@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Math/Color/Color.h"
-#include "Math/Vectors/Vector2D.h"
+#include "Math/Vectors/Vector3D.h"
 
 struct Vertex
 {
-	Vector2D Position;
+	Vector3D Position;
 	Color Color;
 };

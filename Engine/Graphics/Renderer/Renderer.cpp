@@ -1,6 +1,10 @@
 #include "renderer.h"
+#include "Math/Vectors/Vector2D.h"
+#include "Math/Projection/Projection.h"
 
 #include <algorithm>
+
+
 
 static RendererInfo info;
 static uint32_t* framebuffer;
@@ -52,7 +56,7 @@ uint32_t* GetFramebuffer()
 	return framebuffer;
 }
 
-float EdgeFunction(Vector2D Vertice1, Vector2D Vertice2, Vector2D Point)
+float EdgeEquation(Vector2D Vertice1, Vector2D Vertice2, Vector2D Point)
 {
 #pragma region EdgeFunctionExplained
 
@@ -240,7 +244,6 @@ void DrawSquare(Vector2D Vertice1, Vector2D Vertice2, Vector2D Vertice3, Vector2
 
 void DrawFilledTriangle(Vertex Vertice1, Vertex Vertice2, Vertex Vertice3)
 {
-
 #pragma region BoudingBoxExplained
 
 	// bounding box:
@@ -265,13 +268,13 @@ void DrawFilledTriangle(Vertex Vertice1, Vertex Vertice2, Vertex Vertice3)
 
 
 	//   (2,7) ----------(6,7)
-	//	   |      C        |
-	//	   |      *        |
-	//	   |     / \       |
-	//	   |    /   \      |
-	//	   |   *     *     |
-	//	   |  A       B    |
-	//	 (2,2) ----------(6,2)
+	//     |      C        |
+	//     |      * |
+	//     |     / \       |
+	//     |    /   \      |
+	//     |   * * |
+	//     |  A       B    |
+	//   (2,2) ----------(6,2)
 
 
 	//// we iterate through ALL pixels inside this box
@@ -281,12 +284,12 @@ void DrawFilledTriangle(Vertex Vertice1, Vertex Vertice2, Vertex Vertice3)
 	//// for each x from 2 to 6
 
 
-	//		7 | *  *  *  *  * ->
-	//		6 | *  *  *  *  * ->
-	//		5 | *  *  *  *  * ->
-	//		4 | *  *  *  *  * ->
-	//		3 | *  *  *  *  * ->
-	//		2 | *  *  *  *  * ->
+	//		7 | * * * * * ->
+	//		6 | * * * * * ->
+	//		5 | * * * * * ->
+	//		4 | * * * * * ->
+	//		3 | * * * * * ->
+	//		2 | * * * * * ->
 	//			2  3  4  5  6
 
 
@@ -296,19 +299,39 @@ void DrawFilledTriangle(Vertex Vertice1, Vertex Vertice2, Vertex Vertice3)
 
 	//// this test uses barycentric coordinates
 	//// computed with the edge function
-
 #pragma endregion
 
+	Vector2D point1 = Project(Vertice1.Position, info.width, info.height);
+	Vector2D point2 = Project(Vertice2.Position, info.width, info.height);
+	Vector2D point3 = Project(Vertice3.Position, info.width, info.height);
+
 	//bounding box
-	int minX = std::min(Vertice1.Position.x, std::min(Vertice2.Position.x, Vertice3.Position.x));
-	int maxX = std::max(Vertice1.Position.x, std::max(Vertice2.Position.x, Vertice3.Position.x));
+	int minX = std::min(point1.x, std::min(point2.x, point3.x));
+	int maxX = std::max(point1.x, std::max(point2.x, point3.x));
 
-	int minY = std::min(Vertice1.Position.y, std::min(Vertice2.Position.y, Vertice3.Position.y));
-	int maxY = std::max(Vertice1.Position.y, std::max(Vertice2.Position.y, Vertice3.Position.y));
+	int minY = std::min(point1.y, std::min(point2.y, point3.y));
+	int maxY = std::max(point1.y, std::max(point2.y, point3.y));
 
-	float area = EdgeFunction(Vertice1.Position, Vertice2.Position, Vertice3.Position);
+	float area = EdgeEquation(point1, point2, point3);
+
+
+#pragma region AreaExplained
+	// calculates the total area of the original triangle
+	//
+	//         C
+	//        / \     Area = total space inside here
+	//       /   \
+	//      A-----B
+	//
+	// if the area is 0, the points form a straight line (A--B--C),
+	// so there is no triangle to draw
+#pragma endregion
+
 
 	if (area == 0.0f) return;
+
+	// optimization trick: multiplying by (1 / area) 
+	// is much faster for the computer than dividing by the area over and over.
 
 	float invArea = 1.0f / area;
 
@@ -316,27 +339,115 @@ void DrawFilledTriangle(Vertex Vertice1, Vertex Vertice2, Vertex Vertice3)
 	{
 		for (int x = minX; x <= maxX; x++)
 		{
-			float baryWeight0 = EdgeFunction(Vertice2.Position,Vertice3.Position,{ (float)x, (float)y });
-			float baryWeight1 = EdgeFunction(Vertice3.Position,Vertice1.Position,{ (float)x, (float)y });
-			float baryWeight2 = EdgeFunction(Vertice1.Position,Vertice2.Position,{ (float)x, (float)y });
+			float baryWeight0 = EdgeEquation(point2, point3, { (float)x, (float)y });
+			float baryWeight1 = EdgeEquation(point3, point1, { (float)x, (float)y });
+			float baryWeight2 = EdgeEquation(point1, point2, { (float)x, (float)y });
+
+#pragma region BarycentricWeightsExplained
+			// we take the current pixel P(x,y)
+			// and divide the big triangle into 3 smaller triangles:
+			//
+			//         C
+			//        / \
+			//       / P \    <- P is the current pixel
+			//      / / \ \
+			//     A-------B
+			//
+			// baryWeight0 = Area of triangle (P, B, C) -> Opposite to vertex A
+			// baryWeight1 = Area of triangle (P, C, A) -> Opposite to vertex B
+			// baryWeight2 = Area of triangle (P, A, B) -> Opposite to vertex C
+
+#pragma endregion
 
 			float weight0 = baryWeight0 * invArea;
 			float weight1 = baryWeight1 * invArea;
 			float weight2 = baryWeight2 * invArea;
 
+#pragma region WeightsNormalizationExplained
+
+			// we divide the small area by the total area (using that invArea trick).
+			// this converts the values into percentages (from 0.0 to 1.0)
+
+			// Example: 
+			// if P is exactly on top of A -> weight0 = 100% (1.0), the others = 0.
+			// if P is right in the middle -> weight0 = 33%, weight1 = 33%, weight2 = 33%.
+
+#pragma endregion
+
 			if (weight0 >= 0 && weight1 >= 0 && weight2 >= 0 ||
 				(weight0 <= 0 && weight1 <= 0 && weight2 <= 0))
-			{
 
+#pragma region InsideOutsideTestExplained
+
+				// if pixel P is INSIDE the triangle, all percentages will be positive.
+				// if P is OUTSIDE, at least one of them will be negative
+				//
+				//           C/ \
+				//           /   \
+				//          /     \     *P (outside)  =  negative weight
+				//         /       \         
+				//        /  * P    \ 
+				//		 / (inside)  \ 
+				//      / (positive)  \
+				//     A---------------B
+    
+#pragma endregion
+			{
 				Color finalColor =
 					Vertice1.Color * weight0 +
 					Vertice2.Color * weight1 +
 					Vertice3.Color * weight2;
 
-				SetPixel({static_cast<float>(x), static_cast<float>(y)}, ToUint32(finalColor));
+#pragma region ColorInterpolationExplained
+
+				// since we now know the percentage of influence of each vertex,
+				// we simply mix the colors in the exact same proportion
+				//
+				// if the pixel is closer to A (which is red),
+				// weight0 will be higher (e.g., 80%), so the final color will have 80% red.
+				//
+				// final = (ColorA * 80%) + (ColorB * 10%) + (ColorC * 10%)
+
+#pragma endregion
+
+				SetPixel({ static_cast<float>(x), static_cast<float>(y) }, ToUint32(finalColor));
 			}
 		}
 	}
 }
+
+void DrawCircle(uint32_t vertices, float radius, Vector2D center)
+{
+	float step = 2 * 3.14159265f / vertices;
+
+	Vector2D firstVertice;
+	Vector2D previousVertice;
+
+	for (uint32_t points = 0; points < vertices; points++)
+	{
+		float angle = points * step;
+
+		float x = center.x + radius * cosf(angle);
+		float y = center.y + radius * sinf(angle);
+		float z = 0;
+
+		Vector2D currentVertice = { x, y };
+
+		if (points == 0)
+		{
+			firstVertice = currentVertice;
+		}
+		else
+		{
+			DrawLine(previousVertice, currentVertice, 0xFFFFFFFF);
+		}
+
+		previousVertice = currentVertice;
+	}
+
+	DrawLine(previousVertice, firstVertice, 0xFFFFFFFF); //close circle by connecting the last vertice to the first one
+}
+
+
 
 

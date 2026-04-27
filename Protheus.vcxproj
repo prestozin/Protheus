@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Graphics\Mesh\Mesh.h" />
     <ClInclude Include="Engine\Graphics\Renderer\Renderer.h" />
     <ClInclude Include="Engine\Graphics\Vertex\Vertex.h" />
     <ClInclude Include="Engine\Math\Color\Color.h" />
@@ -29,6 +30,7 @@
     <ClInclude Include="Engine\Math\Vectors\Vector3D.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Graphics\Mesh\Mesh.cpp" />
     <ClCompile Include="Engine\Graphics\Renderer\Renderer.cpp" />
     <ClCompile Include="Engine\Math\Projection\Projection.cpp" />
     <ClCompile Include="Engine\Math\Transform\Transform.cpp" />
